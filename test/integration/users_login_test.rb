@@ -59,7 +59,6 @@ class Logout < ValidLogin
 end
 
 class LogoutTest < Logout
-
   test "successful logout" do
     assert_not is_logged_in?
     assert_response :see_other
@@ -71,5 +70,26 @@ class LogoutTest < Logout
     assert_select "a[href=?]", login_path
     assert_select "a[href=?]", logout_path,      count: 0
     assert_select "a[href=?]", user_path(@user), count: 0
+  end
+  
+  test "should still work after logout in second window" do
+    delete logout_path
+    assert_redirected_to root_url
+  end
+end
+
+class RememberingTest < UsersLogin
+
+  test "login with remembering" do
+    log_in_as(@user, remember_me: '1')
+    assert_not cookies[:remember_token].blank?
+  end
+
+  test "login without remembering" do
+    # Cookieを保存してログイン
+    log_in_as(@user, remember_me: '1')
+    # Cookieが削除されていることを検証してからログイン
+    log_in_as(@user, remember_me: '0')
+    assert cookies[:remember_token].blank?
   end
 end
